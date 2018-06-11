@@ -35,6 +35,7 @@ fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
     const option = document.createElement('option');
     option.innerHTML = neighborhood;
     option.value = neighborhood;
+    option.id = neighborhood;
     select.append(option);
   });
 }
@@ -163,9 +164,10 @@ createRestaurantHTML = (restaurant) => {
   const more = document.createElement('a');
   more.innerHTML = 'View Details';
   more.href = DBHelper.urlForRestaurant(restaurant);
+  more.setAttribute("aria-label", `View ${restaurant.name} restaurant details`);
   li.append(more)
 
-  return li
+  return li;
 }
 
 /**
