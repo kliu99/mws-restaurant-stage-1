@@ -16,29 +16,24 @@ class DBHelper {
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {
-
     fetch(DBHelper.DATABASE_URL)
       .then(response => response.json())
       .then((restaurants) => {
-        callback(null, restaurants)
+        // save data to IndexedDb
+        db.restaurants.bulkPut(restaurants);
+        // Callback
+        callback(null, restaurants);
       })
       .catch((error) => {
-          callback(error, null);
+        // get data from IndexedDb
+        db.restaurants.toArray().then(data => {
+          if (data.length === 0) {
+            callback(error, null);
+          } else {
+            callback(null, data);
+          }
+        })
       });
-
-
-    // let xhr = new XMLHttpRequest();
-    // xhr.open('GET', DBHelper.DATABASE_URL);
-    // xhr.onload = () => {
-    //   if (xhr.status === 200) { // Got a success response from server!
-    //     const restaurants = JSON.parse(xhr.responseText);
-    //     callback(null, restaurants);
-    //   } else { // Oops!. Got an error from server.
-    //     const error = (`Request failed. Returned status of ${xhr.status}`);
-    //     callback(error, null);
-    //   }
-    // };
-    // xhr.send();
   }
 
   /**
@@ -201,3 +196,9 @@ class DBHelper {
 
 }
 
+
+/* IndexedDb */
+const db = new Dexie('RestaurantReviews');
+db.version(1).stores({
+  restaurants: 'id'
+})

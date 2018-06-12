@@ -1,5 +1,9 @@
-var CACHE_NAME = 'restaurant-review-v1';
-console.log('Opened cache');
+const CACHE_NAME = 'restaurant-review-v2';
+const IMG_CACHE_NAME = 'restaurant-review-imgs';
+const ALL_CACHES = [
+    CACHE_NAME,
+    IMG_CACHE_NAME
+]
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
@@ -11,7 +15,9 @@ self.addEventListener('install', (event) => {
                 'js/restaurant_info.js',
                 'js/dbhelper.js',
                 'css/styles.css',
-                'data/restaurants.json'
+                'https://unpkg.com/leaflet@1.3.1/dist/leaflet.css',
+                'https://unpkg.com/leaflet@1.3.1/dist/leaflet.js',
+                'https://unpkg.com/dexie@latest/dist/dexie.js'
             ]);
         })
     )
@@ -24,7 +30,7 @@ self.addEventListener('activate', (event) => {
             return Promise.all(
                 cacheNames.filter((cacheName) => {
                     return cacheName.startsWith('restaurant-review-') &&
-                        cacheName != CACHE_NAME;
+                        !ALL_CACHES.includes(cacheName);
                 }).map((cacheName) => {
                     return caches.delete(cacheName);
                 })
@@ -37,9 +43,31 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', function(event) {
     var requestUrl = new URL(event.request.url);
 
+    if (requestUrl.origin === location.origin) {
+        if (requestUrl.pathname.startsWith('/img')) {
+            event.respondWith(servePhoto(event.request));
+            return;
+        }
+    }
+
     event.respondWith(
-      caches.match(event.request).then(function(response) {
+      caches.match(event.request).then(response => {
         return response || fetch(event.request);
       })
     );
   });
+
+
+  function servePhoto(request) {
+    var storageUrl = request.url.replace(/-\d+px\.jpg$/, '');
+    return caches.open(IMG_CACHE_NAME).then((cache) => {
+        return cache.match(storageUrl).then(response => {
+            if (response) return response;
+
+            return fetch(request).then(networkResponse => {
+                cache.put(storageUrl, networkResponse.clone());
+                return networkResponse;
+            });
+        })
+      })
+  }
