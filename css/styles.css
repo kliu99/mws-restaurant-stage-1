@@ -106,6 +106,14 @@ nav h1 a {
     color: #01447e;
     text-decoration: underline;
 }
+
+#breadcrumb li a[aria-current="page"] {
+  color: #000;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+
 /* ====================== Map ====================== */
 #map {
   height: 400px;
