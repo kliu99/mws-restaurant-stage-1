@@ -109,7 +109,7 @@ nav h1 a {
 /* ====================== Map ====================== */
 #map {
   height: 400px;
-  width: 100%;
+  width: 100vw;
   background-color: #ccc;
 }
 /* ====================== Restaurant Filtering ====================== */
@@ -334,7 +334,7 @@ nav h1 a {
   }
 
   .inside #map-container {
-    height: 87vh;
+    height: 50vh;
     width: 100%;
     position: inherit;
     top: auto;
