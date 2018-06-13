@@ -17,7 +17,7 @@ self.addEventListener('install', (event) => {
                 'css/styles.css',
                 'https://unpkg.com/leaflet@1.3.1/dist/leaflet.css',
                 'https://unpkg.com/leaflet@1.3.1/dist/leaflet.js',
-                'https://unpkg.com/dexie@latest/dist/dexie.js'
+                'https://unpkg.com/dexie@latest/dist/dexie.min.js'
             ]);
         })
     )
