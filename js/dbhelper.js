@@ -196,13 +196,11 @@ class DBHelper {
 
 }
 
-
 /* IndexedDb */
 const db = new Dexie('RestaurantReviews');
 db.version(1).stores({
   restaurants: 'id'
 })
-
 
 /**
  * Register Server worker
