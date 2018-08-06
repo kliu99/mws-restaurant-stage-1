@@ -13,6 +13,8 @@
   <title>Restaurant Info</title>
   <!-- Addressbar theme color -->
   <meta name="theme-color" content="#252831"/>
+  <!-- Charset -->
+  <meta charset="utf-8" /> 
   <!-- Manifest -->
   <link rel="manifest" href="/manifest.json">
 </head>
@@ -40,6 +42,7 @@
       <h2 id="restaurant-name"></h2>
       <img id="restaurant-img">
       <p id="restaurant-cuisine"></p>
+      <button id="restaurant-favorite"></button>
       <p id="restaurant-address"></p>
       <table id="restaurant-hours"></table>
     </section>
@@ -49,6 +52,42 @@
       <ul id="reviews-list"></ul>
     </section>
     <!-- End reviews -->
+    <!-- Beginning write reviews -->
+    <section id="write-review-container">
+      <h3>Write Review</h3>
+      <form id="write-review-form">
+          <div>
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name">
+          </div>
+          <div class="rating">
+            <label for="rating">Rating:</label>
+            <input type="radio" id="1star"
+              name="rating" value="1">
+            <label for="1star">★</label>
+            <input type="radio" id="2stars"
+              name="rating" value="2">
+            <label for="2stars">★★</label>
+            <input type="radio" id="3stars"
+              name="rating" value="3">
+            <label for="3stars">★★★</label>
+            <input type="radio" id="4stars"
+              name="rating" value="4">
+            <label for="4stars">★★★★</label>
+            <input type="radio" id="5stars"
+              name="rating" value="5">
+            <label for="5stars">★★★★★</label>                        
+          </div>
+          <div>
+            <label for="comments">Comments:</label>
+            <textarea id="comments" name="comments"></textarea>
+          </div>
+          <div class="button">
+            <button type="button" name="submitBtn">Submit you review</button>
+          </div>
+      </form>
+    </section>
+    <!-- End write reviews -->
     <!-- Beginning map -->
     <section id="map-container" tabindex="-1" role="application" aria-hidden="true">
         <div id="map"></div>

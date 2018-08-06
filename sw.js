@@ -71,3 +71,10 @@ self.addEventListener('fetch', function(event) {
         })
       })
   }
+
+  // sync
+  self.addEventListener('sync', function(event) {
+    if (event.tag == 'post-review') {
+        event.waitUntil(submitReview());
+    }
+  });

@@ -210,6 +210,26 @@ if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').then(function (registration) {
           // Registration was successful
           console.log('ServiceWorker registration successful with scope: ', registration.scope);
+
+          // sync
+          if ('sync' in registration) {
+            console.log('do something sync here');
+            debugger;
+
+            let form = document.getElementById('write-review-form');
+
+
+            
+            if (!!form) {
+              form.elements['submitBtn'].addEventListener('click', () => {
+                registration.sync.register('post-review').then(() => {
+                  console.log('sync registered');
+                  // submitReview
+                });
+              });
+            }
+          }
+
       }, function (err) {
           // registration failed :(
           console.log('ServiceWorker registration failed: ', err);
