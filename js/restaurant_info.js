@@ -174,7 +174,7 @@ createReviewHTML = (review) => {
   li.appendChild(name);
 
   const date = document.createElement('p');
-  date.innerHTML = formatDate(review.updatedAt);
+  date.innerHTML = formatDate(review.updatedAt || (new Date()).getMilliseconds());
   li.appendChild(date);
 
   const rating = document.createElement('p');
@@ -244,36 +244,16 @@ updateFavoriteButton = () => {
 }
 
 /**
- * Submit a restaurant review 
+ * Append a restaurant review to list
  */
-submitReview = () => {
-  const restaurant = self.restaurant;
-  console.log(restaurant.id);
-
+appendReview = (review) => {
   const form = document.getElementById('write-review-form');
-  const name = form.elements['name'].value;
-  const rating = form.elements['rating'].value;
-  const comments = form.elements['comments'].value;
-
-  const post_data = {
-    "restaurant_id": parseInt(restaurant.id),
-    "name": name,
-    "rating": parseInt(rating),
-    "comments": comments
-  };
-
-  fetch('http://localhost:1337/reviews/', {
-    method: 'POST',
-    body: JSON.stringify(post_data),
-  }).then((response) => response.json())
-    .then((review) => {
-      // add to page
-      const ul = document.getElementById('reviews-list');
-      ul.appendChild(createReviewHTML(review));
-      // add to indexDb
-      // clear form
-      form.reset();
-    });
+  // add to page
+  const ul = document.getElementById('reviews-list');
+  ul.appendChild(createReviewHTML(review));
+  // add to indexDb
+  // clear form
+  form.reset();
 }
 
 /**
