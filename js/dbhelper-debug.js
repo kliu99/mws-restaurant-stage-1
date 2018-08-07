@@ -196,9 +196,57 @@ class DBHelper {
 
 }
 
-
 /* IndexedDb */
 const db = new Dexie('RestaurantReviews');
 db.version(1).stores({
   restaurants: 'id'
-})
+});
+db.version(2).stores({
+  outbox: '++id'
+});
+
+/**
+ * Register Server worker
+ */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/sw.js').then(function (registration) {
+      // Registration was successful
+      console.log('ServiceWorker registration successful with scope: ', registration.scope);
+
+      // sync
+      if ('sync' in registration) {
+        let form = document.getElementById('write-review-form');
+        if (!!form) {
+          form.elements['submitBtn'].addEventListener('click', () => {
+            const restaurant = self.restaurant;
+            const name = form.elements['name'].value;
+            const rating = form.elements['rating'].value;
+            const comments = form.elements['comments'].value;
+
+            const post_data = {
+              "restaurant_id": parseInt(restaurant.id),
+              "name": name,
+              "rating": parseInt(rating),
+              "comments": comments
+            };
+
+            // put to html
+            appendReview(post_data);
+
+            // save to outbox
+            db.outbox.add(post_data)
+              .then(() => registration.sync.register('outbox'))
+              .catch((err) => {
+                console.error(err);
+              });
+          });
+        }
+      }
+
+    }, function (err) {
+      // registration failed :(
+      console.log('ServiceWorker registration failed: ', err);
+    });
+  });
+} 

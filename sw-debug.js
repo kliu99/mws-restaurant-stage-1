@@ -1,3 +1,6 @@
+self.importScripts('https://unpkg.com/dexie@2.0.4/dist/dexie.min.js');
+self.importScripts('/js/dbhelper.js');
+
 const CACHE_NAME = 'restaurant-review-v2';
 const IMG_CACHE_NAME = 'restaurant-review-imgs';
 const ALL_CACHES = [
@@ -17,7 +20,8 @@ self.addEventListener('install', (event) => {
                 'css/styles.css',
                 'https://unpkg.com/leaflet@1.3.1/dist/leaflet.css',
                 'https://unpkg.com/leaflet@1.3.1/dist/leaflet.js',
-                'https://unpkg.com/dexie@latest/dist/dexie.min.js'
+                'https://unpkg.com/dexie@latest/dist/dexie.min.js',
+                'https://unpkg.com/dexie@2.0.4/dist/dexie.min.js',
             ]);
         })
     )
@@ -40,7 +44,7 @@ self.addEventListener('activate', (event) => {
 });
 
 // support offline
-self.addEventListener('fetch', function(event) {
+self.addEventListener('fetch', function (event) {
     var requestUrl = new URL(event.request.url);
 
     if (requestUrl.origin === location.origin) {
@@ -51,14 +55,13 @@ self.addEventListener('fetch', function(event) {
     }
 
     event.respondWith(
-      caches.match(event.request).then(response => {
-        return response || fetch(event.request);
-      })
+        caches.match(event.request).then(response => {
+            return response || fetch(event.request);
+        })
     );
-  });
+});
 
-
-  function servePhoto(request) {
+function servePhoto(request) {
     var storageUrl = request.url.replace(/-\d+px\.jpg$/, '');
     return caches.open(IMG_CACHE_NAME).then((cache) => {
         return cache.match(storageUrl).then(response => {
@@ -69,5 +72,24 @@ self.addEventListener('fetch', function(event) {
                 return networkResponse;
             });
         })
-      })
-  }
+    })
+}
+
+// sync
+self.addEventListener('sync', function (event) {
+    if (event.tag == 'outbox') {
+        event.waitUntil(
+            db.outbox.toArray().then((reviews) => {
+                return Promise.all(reviews.map((review) => {
+                    return fetch('http://localhost:1337/reviews/', {
+                        method: 'POST',
+                        body: JSON.stringify(review),
+                    }).then(() => {
+                        return db.outbox.delete(review.id);
+                    });
+                }));
+            }).catch((err) => console.error(err))
+        );
+    };
+});
+

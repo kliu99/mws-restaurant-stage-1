@@ -4,7 +4,7 @@ var newMap;
 /**
  * Initialize map as soon as the page is loaded.
  */
-document.addEventListener('DOMContentLoaded', (event) => {  
+document.addEventListener('DOMContentLoaded', (event) => {
   initMap();
 });
 
@@ -15,7 +15,7 @@ initMap = () => {
   fetchRestaurantFromURL((error, restaurant) => {
     if (error) { // Got an error!
       console.error(error);
-    } else {      
+    } else {
       self.newMap = L.map('map', {
         center: [restaurant.latlng.lat, restaurant.latlng.lng],
         zoom: 16,
@@ -27,14 +27,14 @@ initMap = () => {
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
           '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
           'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-        id: 'mapbox.streets'    
+        id: 'mapbox.streets'
       }).addTo(newMap);
       fillBreadcrumb();
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.newMap);
     }
   });
-}  
- 
+}
+
 /* window.initMap = () => {
   fetchRestaurantFromURL((error, restaurant) => {
     if (error) { // Got an error!
@@ -94,12 +94,32 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   const cuisine = document.getElementById('restaurant-cuisine');
   cuisine.innerHTML = restaurant.cuisine_type;
 
+  // Is Favorites
+  const favorite = document.getElementById('restaurant-favorite');
+  favorite.onclick = () => {
+    const restaurant_id = restaurant.id;
+    const is_favorite = String(restaurant.is_favorite) == 'true';
+    fetch(`http://localhost:1337/restaurants/${restaurant_id}/?is_favorite=${!is_favorite}`, {
+      method: 'PUT'
+    }).then((response) => response.json())
+      .then((updated_restaurant) => {
+        restaurant = self.restaurant = updated_restaurant;
+        updateFavoriteButton();
+      });
+  };
+  updateFavoriteButton();
+
   // fill operating hours
   if (restaurant.operating_hours) {
     fillRestaurantHoursHTML();
   }
   // fill reviews
-  fillReviewsHTML();
+  fetch(`http://localhost:1337/reviews/?restaurant_id=${restaurant.id}`)
+    .then(response => response.json())
+    .then(reviews => {
+      self.restaurant.reviews = reviews;
+      fillReviewsHTML();
+    });
 }
 
 /**
@@ -154,11 +174,19 @@ createReviewHTML = (review) => {
   li.appendChild(name);
 
   const date = document.createElement('p');
-  date.innerHTML = review.date;
+  date.innerHTML = formatDate(review.updatedAt || (new Date()).getMilliseconds());
   li.appendChild(date);
 
   const rating = document.createElement('p');
-  rating.innerHTML = `Rating: ${review.rating}`;
+  let stars = '';
+  for (let i = 1; i <= 5; i++) {
+    if (i < parseInt(review.rating)) {
+      stars += '★';
+    } else {
+      stars += '☆';
+    }
+  }
+  rating.innerHTML = `Rating: ${stars}`;
   li.appendChild(rating);
 
   const comments = document.createElement('p');
@@ -171,13 +199,13 @@ createReviewHTML = (review) => {
 /**
  * Add restaurant name to the breadcrumb navigation menu
  */
-fillBreadcrumb = (restaurant=self.restaurant) => {
+fillBreadcrumb = (restaurant = self.restaurant) => {
   const breadcrumb = document.getElementById('breadcrumb');
   const li = document.createElement('li');
 
   const a = document.createElement('a');
   a.innerHTML = restaurant.name;
-  a.href="#";
+  a.href = "#";
   a.setAttribute("aria-current", "page");
   li.appendChild(a);
 
@@ -198,4 +226,51 @@ getParameterByName = (name, url) => {
   if (!results[2])
     return '';
   return decodeURIComponent(results[2].replace(/\+/g, ' '));
+}
+
+/**
+ * Add a restaurant to favorites
+ */
+updateFavoriteButton = () => {
+  const favorite = document.getElementById('restaurant-favorite');
+  const is_favorite = String(self.restaurant.is_favorite) == 'true';
+  if (String(is_favorite) == 'true') {
+    favorite.innerHTML = "- Remove from Favorites";
+    favorite.setAttribute('aria-label', 'remove restaurant from favorites');
+  } else {
+    favorite.innerHTML = "+ Add to Favorites";
+    favorite.setAttribute('aria-label', 'add restaurant to favorites');
+  }
+}
+
+/**
+ * Append a restaurant review to list
+ */
+appendReview = (review) => {
+  const form = document.getElementById('write-review-form');
+  // add to page
+  const ul = document.getElementById('reviews-list');
+  ul.appendChild(createReviewHTML(review));
+  // add to indexDb
+  // clear form
+  form.reset();
+}
+
+/**
+ * Adapted from: https://stackoverflow.com/questions/3552461/how-to-format-a-javascript-date
+ */
+formatDate = (milseconds) => {
+  const monthNames = [
+    "January", "February", "March",
+    "April", "May", "June", "July",
+    "August", "September", "October",
+    "November", "December"
+  ];
+
+  const date = new Date(milseconds);
+  const day = date.getDate();
+  const monthIndex = date.getMonth();
+  const year = date.getFullYear();
+
+  return `${monthNames[monthIndex]} ${day}, ${year}`;
 }
