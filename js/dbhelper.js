@@ -213,40 +213,28 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').then(function (registration) {
       // Registration was successful
       console.log('ServiceWorker registration successful with scope: ', registration.scope);
-
-      // sync
-      if ('sync' in registration) {
-        let form = document.getElementById('write-review-form');
-        if (!!form) {
-          form.elements['submitBtn'].addEventListener('click', () => {
-            const restaurant = self.restaurant;
-            const name = form.elements['name'].value;
-            const rating = form.elements['rating'].value;
-            const comments = form.elements['comments'].value;
-
-            const post_data = {
-              "restaurant_id": parseInt(restaurant.id),
-              "name": name,
-              "rating": parseInt(rating),
-              "comments": comments
-            };
-
-            // put to html
-            appendReview(post_data);
-
-            // save to outbox
-            db.outbox.add(post_data)
-              .then(() => registration.sync.register('outbox'))
-              .catch((err) => {
-                console.error(err);
-              });
-          });
-        }
-      }
-
     }, function (err) {
       // registration failed :(
       console.log('ServiceWorker registration failed: ', err);
+    });
+
+    // When back online, post all the data in the outbox
+    window.addEventListener('online', () => {
+      console.log('Back online');
+      db.outbox.toArray().then((reviews) => {
+          return Promise.all(reviews.map((review) => {
+              return fetch('http://localhost:1337/reviews/', {
+                  method: 'POST',
+                  body: JSON.stringify(review),
+              }).then(() => {
+                  return db.outbox.delete(review.id);
+              });
+          }));
+      }).catch((err) => console.error(err))
+    });
+
+    window.addEventListener('offline', () => {
+      console.log('You are offline!');
     });
   });
 } 

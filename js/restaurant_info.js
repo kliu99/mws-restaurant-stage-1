@@ -174,7 +174,7 @@ createReviewHTML = (review) => {
   li.appendChild(name);
 
   const date = document.createElement('p');
-  date.innerHTML = formatDate(review.updatedAt || (new Date()).getMilliseconds());
+  date.innerHTML = formatDate(review.updatedAt || Date.now());
   li.appendChild(date);
 
   const rating = document.createElement('p');
@@ -242,6 +242,38 @@ updateFavoriteButton = () => {
     favorite.setAttribute('aria-label', 'add restaurant to favorites');
   }
 }
+
+submitReview = () => {
+  let form = document.getElementById('write-review-form');
+  const restaurant = self.restaurant;
+  const name = form.elements['name'].value;
+  const rating = form.elements['rating'].value;
+  const comments = form.elements['comments'].value;
+
+  const post_data = {
+    "restaurant_id": parseInt(restaurant.id),
+    "name": name,
+    "rating": parseInt(rating),
+    "comments": comments
+  };
+
+  // save to outbox and attempt to post
+  db.outbox.add(post_data).then(() =>
+    fetch('http://localhost:1337/reviews/', {
+      method: 'POST',
+      body: JSON.stringify(post_data),
+    })
+  ).then((response) =>
+    response.json()
+  ).then((review) => {
+    appendReview(review);
+    db.outbox.delete(post_data.id);
+  }).catch((err) => {
+    appendReview(post_data);
+    console.error(err);
+  });
+};
+
 
 /**
  * Append a restaurant review to list

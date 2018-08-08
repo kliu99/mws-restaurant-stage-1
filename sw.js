@@ -77,22 +77,3 @@ function servePhoto(request) {
         })
     })
 }
-
-// sync
-self.addEventListener('sync', function (event) {
-    if (event.tag == 'outbox') {
-        event.waitUntil(
-            db.outbox.toArray().then((reviews) => {
-                return Promise.all(reviews.map((review) => {
-                    return fetch('http://localhost:1337/reviews/', {
-                        method: 'POST',
-                        body: JSON.stringify(review),
-                    }).then(() => {
-                        return db.outbox.delete(review.id);
-                    });
-                }));
-            }).catch((err) => console.error(err))
-        );
-    };
-});
-
