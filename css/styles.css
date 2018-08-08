@@ -38,6 +38,7 @@ article, aside, canvas, details, figcaption, figure, footer, header, hgroup, men
 #maincontent {
   background-color: #f3f3f3;
   min-height: 100%;
+  width: 100vw;
 }
 #footer {
   background-color: #444;
@@ -232,7 +233,7 @@ nav h1 a {
 .inside header {
   position: fixed;
   top: 0;
-  width: 100%;
+  width: 100vw;
   z-index: 1000;
 }
 .inside #map-container {
@@ -381,6 +382,9 @@ nav h1 a {
 	width: 90%;
 }
 
+#restaurant-list-view {
+  width: 100vw;
+}
 
 @media screen and (min-width: 961px) and (max-width: 1200px) {
   .inside #map-container {
@@ -407,7 +411,8 @@ nav h1 a {
   }
 
   .inside #footer {
-    width: 100%;
+    width: 100vw;
+    right: 0px;
   }
 
   .inside #map-container {
@@ -477,7 +482,34 @@ nav h1 a {
   #write-review-container input[type="radio"] {
     float: left;
   }
+
+  #write-review-container input, #write-review-container textarea {
+    width: 220px;
+  }
 }
+
+@media screen and (max-width: 350px) {
+  #restaurants-list {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+
+  #restaurants-list li {
+    margin-left: 0px;
+    margin-right: 0px;
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  .inside #footer {
+    width: 100vw;
+    left: 0px;
+    right: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
+  }
+}
+
 
 .skip-link {
   position: absolute;
