@@ -14,6 +14,7 @@ self.addEventListener('install', (event) => {
             console.log('Opened cache');
             return cache.addAll([
                 '/',
+                '/restaurant.html',
                 'js/main.js',
                 'js/restaurant_info.js',
                 'js/dbhelper.js',
@@ -55,7 +56,9 @@ self.addEventListener('fetch', function (event) {
     }
 
     event.respondWith(
-        caches.match(event.request).then(response => {
+        caches.match(event.request, {
+            ignoreSearch: true  
+        }).then(response => {
             return response || fetch(event.request);
         })
     );
